@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node index"
+    "start": "node -r dotenv/config index.js",
+    "dev": "nodemon --exec babel-node -r node_modules/dotenv/config index.js"
   },
   "keywords": [],
   "author": "",
