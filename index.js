@@ -1,8 +1,6 @@
 const express = require("express");
 const app = express();
 const http = require("http").Server(app);
-const path = require("path");
-const cors = require("cors");
 const io = require("socket.io")(http, {
   cors: {
     origin: ["http://localhost:3000", "https://giphy-chat.vercel.app"],
@@ -10,17 +8,34 @@ const io = require("socket.io")(http, {
     methods: ["GET", "POST"],
   },
 });
+const cors = require("cors");
 
+// Configuring the database and message model
 const dbConfig = require("./config");
-const port = process.env.PORT || 5000;
-
 const Message = require("./message.model");
 const mongoose = require("mongoose");
 
+// Call a user array (To store number of users connected)
+const users = [];
+
+app.use(cors());
+
+app.use(function (req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "X-Requested-With");
+  res.header("Access-Control-Allow-Headers", "Content-Type");
+  res.header("Access-Control-Allow-Methods", "PUT, GET, POST, DELETE, OPTIONS");
+  next();
+});
+
+mongoose.Promise = global.Promise;
+
+// Connecting to the database
 mongoose
   .connect(dbConfig.MONGODB_URI, {
-    useUnifiedTopology: true,
     useNewUrlParser: true,
+    useUnifiedTopology: true,
+    useFindAndModify: false,
   })
   .then(() => {
     console.log("Successfully connected to the database");
@@ -30,15 +45,7 @@ mongoose
     process.exit();
   });
 
-app.use(express.static(path.join(__dirname, "/app.html")));
-app.use(cors());
-app.use(function (req, res, next) {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Headers", "X-Requested-With");
-  res.header("Access-Control-Allow-Headers", "Content-Type");
-  res.header("Access-Control-Allow-Methods", "PUT, GET, POST, DELETE, OPTIONS");
-  next();
-});
+// define a simple route
 app.get("/", (req, res) => {
   res.json({
     message: "Giphy Chat Server is Running",
@@ -47,8 +54,6 @@ app.get("/", (req, res) => {
 });
 
 io.on("connection", (socket) => {
-  const users = [];
-
   // Get users
   users.push({ id: socket.id });
   io.emit("users", { users: users });
@@ -98,6 +103,7 @@ io.on("connection", (socket) => {
   });
 });
 
-http.listen(port, () => {
-  console.log("listening on *:" + port);
+// listen for requests
+http.listen(5000, () => {
+  console.log("Server is listening on port 5000");
 });
