@@ -12,6 +12,7 @@ const io = require("socket.io")(http, {
 });
 
 const users = [];
+const typers = [];
 
 const dbConfig = require("./config");
 const port = process.env.PORT || 5000;
@@ -53,6 +54,9 @@ io.on("connection", (socket) => {
   users.push({ id: socket.id });
   io.emit("users", { users: users });
 
+  // Get all typers
+  io.emit("typers", { typers: typers });
+
   // Get the last 10 messages from the database.
   Message.find()
     .sort({ createdAt: -1 })
@@ -70,6 +74,8 @@ io.on("connection", (socket) => {
     const message = new Message({
       message: msg.message,
       gif: msg.gif,
+      sender_id: msg.sender_id,
+      sender_name: msg.sender_name,
     });
 
     // Save the message to the database.
@@ -79,6 +85,27 @@ io.on("connection", (socket) => {
 
     // Notify all other users about a new message.
     socket.broadcast.emit("push", msg);
+  });
+
+  // Listen typing events
+  socket.on("start_typing", (data) => {
+    typers.push(data.user);
+    io.emit("typers", { typers: typers });
+  });
+  socket.on("stop_typing", (data) => {
+    // Remove typer
+    let index = -1;
+    for (let i = 0; i < typers.length; i++) {
+      const typer = typers[i];
+      if (typer === data.user) {
+        index = i;
+      }
+    }
+    // Remove user
+    if (index !== -1) {
+      typers.splice(index, 1);
+    }
+    io.emit("typers", { typers: typers });
   });
 
   socket.on("disconnect", (reason) => {
@@ -95,6 +122,8 @@ io.on("connection", (socket) => {
       users.splice(index, 1);
     }
     io.emit("users", { users: users });
+    typers.length = 0;
+    io.emit("typers", { typers: typers });
   });
 });
 

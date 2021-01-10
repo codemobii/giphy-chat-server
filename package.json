@@ -4,15 +4,22 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node index"
+    "start": "nodemon index"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "axios": "^0.21.1",
+    "cloudinary": "^1.23.0",
     "cors": "^2.8.5",
     "express": "^4.17.1",
+    "form-data": "^3.0.0",
+    "geoip-lite": "^1.4.2",
     "mongoose": "^5.11.10",
+    "node-fetch": "^2.6.1",
+    "nodemon": "^2.0.7",
+    "react-circular-progressbar": "^2.0.3",
     "socket.io": "^3.0.5"
   }
 }
