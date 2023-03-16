@@ -22,8 +22,9 @@ const mongoose = require("mongoose");
 
 mongoose
   .connect(dbConfig.MONGODB_URI, {
-    useUnifiedTopology: true,
-    useNewUrlParser: true,
+  useNewUrlParser: true,
+        useUnifiedTopology: true,
+        useCreateIndex: true,
   })
   .then(() => {
     console.log("Successfully connected to the database");
